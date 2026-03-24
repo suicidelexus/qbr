@@ -1,22 +1,25 @@
 """
-AI Layer — генерация инсайтов через OpenAI LLM + rule-based fallback
+AI Layer — генерация инсайтов через Groq LLM
 """
 import pandas as pd
-from typing import Dict, List, Optional
+from typing import Dict, List
 from processing_layer import AnalysisEngine
 import config
 
 
 # ════════════════════════════════════════════════════════
-#  LLM-powered Insight Generator (OpenAI)
+#  LLM-powered Insight Generator (Groq)
 # ════════════════════════════════════════════════════════
 
 class LLMInsightGenerator:
-    """Генерация инсайтов через OpenAI GPT"""
+    """
+    Генерация инсайтов через Groq LLM (бесплатно!)
+    Получить ключ: https://console.groq.com/keys
+    """
 
     def __init__(self, api_key: str = None, model: str = None):
-        self.api_key = api_key or config.OPENAI_API_KEY
-        self.model = model or config.OPENAI_MODEL
+        self.api_key = api_key or config.GROQ_API_KEY
+        self.model = model or config.GROQ_MODEL
         self._client = None
 
     @property
@@ -25,8 +28,8 @@ class LLMInsightGenerator:
 
     def _get_client(self):
         if self._client is None:
-            from openai import OpenAI
-            self._client = OpenAI(api_key=self.api_key)
+            from groq import Groq
+            self._client = Groq(api_key=self.api_key)
         return self._client
 
     def _chat(self, system: str, user: str, max_tokens: int = 2000) -> str:

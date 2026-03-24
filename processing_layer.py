@@ -15,6 +15,12 @@ class DataProcessor:
         """Расчет производных метрик"""
         df = df.copy()
         
+        # Конвертируем числовые колонки
+        numeric_cols = ['impressions', 'clicks', 'TotalSum', 'ctr', 'cpm', 'cpc', 'viewability', 'vtr', 'frequency', 'reach', 'views']
+        for col in numeric_cols:
+            if col in df.columns:
+                df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
+        
         # CTR
         if 'clicks' in df.columns and 'impressions' in df.columns:
             df['ctr'] = np.where(

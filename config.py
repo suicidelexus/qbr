@@ -12,9 +12,11 @@ load_dotenv()
 DSP_CLIENT_ID = os.getenv('DSP_CLIENT_ID')    # Обязательно!
 DSP_SECRET_KEY = os.getenv('DSP_SECRET_KEY')  # Обязательно!
 
-# LLM Configuration
-OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
-OPENAI_MODEL = os.getenv('OPENAI_MODEL', 'gpt-4o')
+# LLM Configuration (Groq - бесплатно!)
+# Получить ключ: https://console.groq.com/keys
+GROQ_API_KEY = os.getenv('GROQ_API_KEY')
+GROQ_MODEL = os.getenv('GROQ_MODEL', 'llama-3.3-70b-versatile')
+
 
 # Metrics Configuration
 CORE_METRICS = [
