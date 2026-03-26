@@ -2,6 +2,9 @@
 DSP Analytics Platform - Main Entry Point
 AI-ядро аналитической платформы для DSP
 """
+import sys
+sys.stdout.reconfigure(encoding='utf-8')
+
 import pandas as pd
 from data_layer import DataLoader, DSPClient
 from processing_layer import DataProcessor

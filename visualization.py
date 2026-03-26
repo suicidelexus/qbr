@@ -5,8 +5,6 @@ import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
 from plotly.subplots import make_subplots
-import matplotlib.pyplot as plt
-import seaborn as sns
 from typing import List, Optional
 import config
 
@@ -232,26 +230,30 @@ class ChartGenerator:
         charts = {}
         
         # Advertiser comparison
-        if not analysis_results['advertisers']['data'].empty:
-            fig = self.advertiser_comparison(analysis_results['advertisers']['data'])
+        adv_data = analysis_results.get('advertisers', {}).get('data')
+        if adv_data is not None and not adv_data.empty:
+            fig = self.advertiser_comparison(adv_data)
             self.save_figure(fig, f'{output_dir}/advertisers.html')
             charts['advertisers'] = fig
-        
+
         # Media split
-        if not analysis_results['media_split']['data'].empty:
-            fig = self.media_split_pie(analysis_results['media_split']['data'])
+        ms_data = analysis_results.get('media_split', {}).get('data')
+        if ms_data is not None and not ms_data.empty:
+            fig = self.media_split_pie(ms_data)
             self.save_figure(fig, f'{output_dir}/media_split.html')
             charts['media_split'] = fig
-        
+
         # Dynamics
-        if not analysis_results['dynamics']['data'].empty:
-            fig = self.dynamics_line(analysis_results['dynamics']['data'])
+        dyn_data = analysis_results.get('dynamics', {}).get('data')
+        if dyn_data is not None and not dyn_data.empty:
+            fig = self.dynamics_line(dyn_data)
             self.save_figure(fig, f'{output_dir}/dynamics.html')
             charts['dynamics'] = fig
-        
+
         # DMP
-        if analysis_results['dmp']['data']:
-            fig = self.dmp_comparison(analysis_results['dmp']['data'])
+        dmp_data = analysis_results.get('dmp', {}).get('data')
+        if dmp_data:
+            fig = self.dmp_comparison(dmp_data)
             self.save_figure(fig, f'{output_dir}/dmp.html')
             charts['dmp'] = fig
         

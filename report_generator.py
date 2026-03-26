@@ -26,13 +26,13 @@ class ReportGenerator:
         # Key Insights
         md.append("## Ключевые инсайты\n")
         all_insights = (
-            self.results['advertisers']['insights'] +
-            self.results['products']['insights'] +
-            self.results['media_split']['insights'] +
-            self.results['dynamics']['insights'] +
-            self.results['dmp']['insights'] +
-            self.results['frequency']['insights'] +
-            self.results['conversions']['insights']
+            self.results.get('advertisers', {}).get('insights', []) +
+            self.results.get('products', {}).get('insights', []) +
+            self.results.get('media_split', {}).get('insights', []) +
+            self.results.get('dynamics', {}).get('insights', []) +
+            self.results.get('dmp', {}).get('insights', []) +
+            self.results.get('frequency', {}).get('insights', []) +
+            self.results.get('conversions', {}).get('insights', [])
         )
         for insight in all_insights:
             md.append(f"- {insight}\n")
@@ -40,42 +40,42 @@ class ReportGenerator:
         
         # Advertisers
         md.append("## Сравнение Advertisers\n")
-        for insight in self.results['advertisers']['insights']:
+        for insight in self.results.get('advertisers', {}).get('insights', []):
             md.append(f"- {insight}\n")
         md.append("\n")
-        
+
         # Products
         md.append("## Сравнение продуктов\n")
-        for insight in self.results['products']['insights']:
+        for insight in self.results.get('products', {}).get('insights', []):
             md.append(f"- {insight}\n")
         md.append("\n")
-        
+
         # Media Split
         md.append("## Медиасплит\n")
-        for insight in self.results['media_split']['insights']:
+        for insight in self.results.get('media_split', {}).get('insights', []):
             md.append(f"- {insight}\n")
         md.append("\n")
-        
+
         # Dynamics
         md.append("## Динамика\n")
-        for insight in self.results['dynamics']['insights']:
+        for insight in self.results.get('dynamics', {}).get('insights', []):
             md.append(f"- {insight}\n")
         md.append("\n")
-        
+
         # DMP
         md.append("## DMP Анализ\n")
-        for insight in self.results['dmp']['insights']:
+        for insight in self.results.get('dmp', {}).get('insights', []):
             md.append(f"- {insight}\n")
         md.append("\n")
-        
+
         # Frequency
         md.append("## Frequency Анализ\n")
-        for insight in self.results['frequency']['insights']:
+        for insight in self.results.get('frequency', {}).get('insights', []):
             md.append(f"- {insight}\n")
         md.append("\n")
-        
+
         # Conversions
-        if self.results['conversions']['insights']:
+        if self.results.get('conversions', {}).get('insights'):
             md.append("## Конверсионный анализ\n")
             for insight in self.results['conversions']['insights']:
                 md.append(f"- {insight}\n")
@@ -124,75 +124,75 @@ class ReportGenerator:
         slides.append({
             'type': 'content',
             'title': 'TL;DR',
-            'content': self.results['tldr']
+            'content': self.results.get('tldr', '')
         })
-        
+
         # 3. Advertisers
         slides.append({
             'type': 'content_chart',
             'title': 'Сравнение Advertisers',
-            'insights': self.results['advertisers']['insights'],
+            'insights': self.results.get('advertisers', {}).get('insights', []),
             'chart': 'advertisers'
         })
-        
+
         # 4. Products
         slides.append({
             'type': 'content_chart',
             'title': 'Сравнение продуктов',
-            'insights': self.results['products']['insights'],
+            'insights': self.results.get('products', {}).get('insights', []),
             'chart': 'products'
         })
-        
+
         # 5. Media Split
         slides.append({
             'type': 'content_chart',
             'title': 'Медиасплит',
-            'insights': self.results['media_split']['insights'],
+            'insights': self.results.get('media_split', {}).get('insights', []),
             'chart': 'media_split'
         })
-        
+
         # 6. Performance
         slides.append({
             'type': 'content',
             'title': 'Performance Overview',
-            'insights': self.results['advertisers']['insights'][:3]
+            'insights': self.results.get('advertisers', {}).get('insights', [])[:3]
         })
-        
+
         # 7. Dynamics
         slides.append({
             'type': 'content_chart',
             'title': 'Динамика',
-            'insights': self.results['dynamics']['insights'],
+            'insights': self.results.get('dynamics', {}).get('insights', []),
             'chart': 'dynamics'
         })
-        
+
         # 8. DMP
         slides.append({
             'type': 'content_chart',
             'title': 'DMP Анализ',
-            'insights': self.results['dmp']['insights'],
+            'insights': self.results.get('dmp', {}).get('insights', []),
             'chart': 'dmp'
         })
-        
+
         # 9. Frequency
         slides.append({
             'type': 'content',
             'title': 'Frequency Анализ',
-            'insights': self.results['frequency']['insights']
+            'insights': self.results.get('frequency', {}).get('insights', [])
         })
-        
+
         # 10. Recommendations
         slides.append({
             'type': 'content',
             'title': 'Рекомендации',
-            'content': self.results['recommendations']
+            'content': self.results.get('recommendations', [])
         })
-        
+
         # 11. Hypotheses
         slides.append({
             'type': 'content',
             'title': 'Гипотезы',
-            'content': self.results['hypotheses']
+            'content': self.results.get('hypotheses', [])
         })
         
         return slides

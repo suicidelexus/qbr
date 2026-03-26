@@ -82,34 +82,24 @@ def run_analysis():
     # 3. Определение периода
     end_date = datetime.now().date()
     start_date = end_date - timedelta(days=7)  # За последнюю неделю
-    
+
     logger.info(f"Период: {{start_date}} - {{end_date}}")
-    
+
     # 4. Загрузка данных
     logger.info("Загрузка данных...")
-    df = manager.load_data(
+    splits = manager.load_all_splits(
         start_date=start_date.isoformat(),
         end_date=end_date.isoformat(),
-        parallel=True
     )
-    
-    if df.empty:
+    df = splits.get('day')
+
+    if df is None or df.empty:
         logger.error("Нет данных для анализа")
         return False
-    
+
     logger.info(f"Загружено {{len(df)}} строк")
-    
-    # 5. Валидация данных
-    logger.info("Валидация данных...")
-    validation = manager.validate_data_compatibility(df)
-    logger.info(f"Статус валидации: {{validation['status']}}")
-    
-    if validation['issues']:
-        logger.warning("Проблемы с данными:")
-        for issue in validation['issues']:
-            logger.warning(f"  - {{issue}}")
-    
-    # 6. AI-анализ
+
+    # 5. AI-анализ
     logger.info("Запуск AI-анализа...")
     agent = AnalyticsAgent(df)
     results = agent.auto_analyze()
@@ -125,7 +115,7 @@ def run_analysis():
     # Markdown отчет
     report_gen = ReportGenerator(results)
     report_path = os.path.join(output_dir, f"report_{{end_date}}.md")
-    report_gen.save_to_file(report_path)
+    report_gen.save_markdown(report_path)
     logger.info(f"Отчет сохранен: {{report_path}}")
     
     # 8. Генерация графиков

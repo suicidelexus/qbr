@@ -52,10 +52,6 @@ class HybridAIClient(DSPClient):
         """Алиас для get_campaigns"""
         return self.get_campaigns(advertiser_id=advertiser_id)
 
-    def get_creatives_list(self, campaign_id: str = None, **kwargs) -> pd.DataFrame:
-        """Алиас для get_banners"""
-        return self.get_banners(campaign_id=campaign_id)
-
     def get_creatives(self, campaign_id: str = None, **kwargs) -> pd.DataFrame:
         """Алиас для get_banners"""
         return self.get_banners(campaign_id=campaign_id)

@@ -21,8 +21,10 @@ def test_api_connection():
         
         # Проверка конфигурации
         print("\n[2/5] Проверка конфигурации...")
-        print(f"  API URL: {client.api_url}")
-        print(f"  API Key: {'*' * 20}...{client.api_key[-4:] if client.api_key and len(client.api_key) > 4 else 'НЕ НАСТРОЕН'}")
+        from data_layer import API_BASE
+        print(f"  API URL: {API_BASE}")
+        masked = '*' * 20 + '...' + client.secret_key[-4:] if client.secret_key and len(client.secret_key) > 4 else 'НЕ НАСТРОЕН'
+        print(f"  Secret Key: {masked}")
         print(f"  Client ID: {client.client_id or 'не указан'}")
         
         # Проверка подключения
@@ -67,7 +69,7 @@ def test_api_connection():
         
         print("\nРешение:")
         print("  1. Создайте .env файл: cp .env.example .env")
-        print("  2. Заполните DSP_API_URL и DSP_API_KEY")
+        print("  2. Заполните DSP_CLIENT_ID и DSP_SECRET_KEY")
         print("  3. См. документацию: API_SETUP.md")
         
         return False
