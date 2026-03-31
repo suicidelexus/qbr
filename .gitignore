@@ -51,3 +51,4 @@ htmlcov/
 # Streamlit
 .streamlit/
 .env
+.env

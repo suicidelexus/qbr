@@ -1,69 +1,65 @@
 """
-Конфигурация DSP Analytics Platform
+Configuration — constants only
 """
-import os
-from dotenv import load_dotenv
 
-load_dotenv()
+# ── Colors ────────────────────────────────────────────────
+BRAND_COLORS = ["#4F46E5", "#7C3AED", "#2563EB", "#059669", "#D97706", "#DC2626", "#0891B2", "#BE185D"]
 
-# API Configuration
-# Hybrid.ai DSP Platform (https://docs.hybrid.ai/rest-api-3-0)
-# Credentials можно задать через .env или ввести в Dashboard UI
-DSP_CLIENT_ID = os.getenv('DSP_CLIENT_ID')    # Обязательно!
-DSP_SECRET_KEY = os.getenv('DSP_SECRET_KEY')  # Обязательно!
+COLOR = {
+    "primary":   "#4F46E5",
+    "secondary": "#7C3AED",
+    "success":   "#059669",
+    "warning":   "#D97706",
+    "danger":    "#DC2626",
+    "info":      "#0891B2",
+    "text":      "#1F2937",
+    "muted":     "#6B7280",
+    "bg":        "#F9FAFB",
+}
 
-# LLM Configuration (Groq - бесплатно!)
-# Получить ключ: https://console.groq.com/keys
-GROQ_API_KEY = os.getenv('GROQ_API_KEY')
-GROQ_MODEL = os.getenv('GROQ_MODEL', 'llama-3.3-70b-versatile')
+PLOTLY_TEMPLATE = "plotly_white"
 
+# ── Benchmarks ────────────────────────────────────────────
+CTR_BENCHMARK        = 0.001   # 0.1% — Display
+CTR_BENCHMARK_VIDEO  = 0.004   # 0.4% — Video
+CTR_ANOMALY_HIGH_DISPLAY = 0.004   # > 0.4% anomaly for Display
+CTR_ANOMALY_HIGH_VIDEO   = 0.015   # > 1.5% anomaly for Video
+VIEWABILITY_BENCHMARK = 0.70   # 70%
+VTR_BENCHMARK        = 0.25    # 25%
+MIN_IMPRESSIONS      = 1000
 
-# Metrics Configuration
-CORE_METRICS = [
-    'impressions',
-    'clicks',
-    'ctr',
-    'cpc',
-    'cpm',
-    'viewability',
-    'vtr',
-    'frequency',
-    'TotalSum'
-]
+# ── LLM providers ─────────────────────────────────────────
+LLM_PROVIDERS = {
+    "Mistral AI":     {"base_url": "https://api.mistral.ai/v1", "default_model": "mistral-small-latest"},
+    "Custom (proxy)": {"base_url": "", "default_model": ""},
+}
 
-CONVERSION_METRICS = [
-    'post_click_conversions',
-    'post_view_conversions',
-    'conversion_value',
-    'revenue'
-]
+# ── Standard column mapping ───────────────────────────────
+STANDARD_COLS = {
+    "date":       ["date", "дата", "день", "day", "month", "период", "месяц", "неделя", "week"],
+    "advertiser": ["advertiser", "рекламодатель", "клиент", "client", "бренд", "brand",
+                   "advertiser_id", "advertiser_source"],
+    "campaign":   ["campaign", "кампания", "кампании", "camp", "campaign_name", "название кампании"],
+    "format":     ["format", "формат", "формат креатива", "тип креатива", "banner_type",
+                   "тип", "type", "вид", "канал"],
+    "banner_size":["banner_size", "size", "размер", "creative_size", "banner size",
+                   "размер баннера", "размер креатива"],
+    "product":    ["product", "продукт", "товар", "категория продукта"],
+    "impressions":["impressions", "imp", "показы", "импрессии", "views", "показ"],
+    "clicks":     ["clicks", "click", "клики", "кликов", "кликов за период"],
+    "TotalSum":   ["totalsum", "total_sum", "бюджет", "budget", "расход", "spend", "затраты",
+                   "cost", "total", "сумма", "общий расход", "расходы", "потрачено", "списано"],
+    "ctr":        ["ctr", "click-through rate", "кликабельность"],
+    "cpm":        ["cpm", "cost per mille", "цена за тысячу"],
+    "cpc":        ["cpc", "cost per click", "цена за клик"],
+    "viewability":["viewability", "видимость", "viewable"],
+    "vtr":        ["vtr", "view_rate", "view through rate", "досматриваемость"],
+    "frequency":  ["frequency", "частота", "freq", "средняя частота"],
+    "reach":      ["reach", "охват", "unique reach"],
+}
 
-ALL_METRICS = CORE_METRICS + CONVERSION_METRICS
-
-# Dimensions
-DIMENSIONS = [
-    'date',
-    'advertiser',
-    'category',
-    'product',
-    'campaign',
-    'format',
-    'banner_type',
-    'banner_size',
-    'creative_size',
-    'audience_segment'
-]
-
-# BannerSize groups
-BANNER_SIZE_PRIMARY = ['300x250', '300x600', '336x280', '240x400', '320x480']
-BANNER_SIZE_SECONDARY = ['320x100', '320x50', '640x360', '300x50', '300x300', '728x90', '160x600']
-BANNER_SIZE_ALL = BANNER_SIZE_PRIMARY + BANNER_SIZE_SECONDARY
-
-# Analysis Thresholds
-MIN_IMPRESSIONS = 1000  # Минимум для статистической значимости
-CTR_BENCHMARK = 0.001   # 0.1%
-VTR_BENCHMARK = 0.25    # 25%
-VIEWABILITY_BENCHMARK = 0.70  # 70%
-
-# Visualization
-CHART_COLORS = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b']
+BENCHMARKS = {
+    "ctr":        CTR_BENCHMARK,
+    "viewability": VIEWABILITY_BENCHMARK,
+    "vtr":        VTR_BENCHMARK,
+}

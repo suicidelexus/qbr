@@ -1,19 +1,9 @@
+streamlit>=1.28.0
 pandas>=2.0.0
 numpy>=1.24.0
 plotly>=5.14.0
-matplotlib>=3.7.0
-seaborn>=0.12.0
-requests>=2.31.0
-urllib3>=2.0.0
-python-dotenv>=1.0.0
-streamlit>=1.28.0
-# LLM Providers (выберите один)
-groq>=0.5.0                 # Groq (бесплатно, быстро!) - рекомендуется
-google-generativeai>=0.5.0  # Gemini (бесплатно)
-ollama>=0.2.0               # Ollama (локально, бесплатно)
-openai>=1.0.0               # OpenAI (платно)
-google-api-python-client>=2.100.0
-google-auth-httplib2>=0.1.1
-google-auth-oauthlib>=1.1.0
 openpyxl>=3.1.0
-
+requests>=2.31.0
+openai>=1.0.0
+python-dotenv>=1.0.0
+markdown>=3.5.0
