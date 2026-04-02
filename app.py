@@ -550,19 +550,17 @@ with tab_compare:
             if compare_metrics:
                 chart_df = agg_df.copy()
                 _pct_map = {'ctr': 'CTR, %', 'viewability': 'Viewability, %', 'vtr': 'VTR, %'}
-                chart_metrics, benchmarks = [], {}
+                chart_metrics = []
                 for m in compare_metrics:
                     if m in _pct_map:
                         label = _pct_map[m]
                         chart_df[label] = (chart_df[m] * 100).round(2)
                         chart_metrics.append(label)
-                        if m == 'ctr':
-                            benchmarks[label] = config.CTR_BENCHMARK * 100
                     else:
                         chart_metrics.append(m)
                 st.plotly_chart(
                     bar_comparison(chart_df, group_dim, chart_metrics,
-                                   title=f"Сравнение по {group_dim}", benchmarks=benchmarks),
+                                   title=f"Сравнение по {group_dim}"),
                     use_container_width=True,
                 )
 
