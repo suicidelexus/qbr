@@ -119,6 +119,72 @@ def _to_xlsx(data: pd.DataFrame, has_advertiser: bool, has_format: bool) -> byte
     return buf.getvalue()
 
 
+def _text_to_xlsx(text: str, title: str = "Анализ") -> bytes:
+    """Convert markdown-like AI text to formatted Excel: headers bold, rows auto-width."""
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, Alignment, PatternFill, Border, Side
+    from openpyxl.utils import get_column_letter
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = title[:31]
+
+    # Styles
+    font_h1    = Font(name="Calibri", bold=True, size=14, color="FFFFFF")
+    font_h2    = Font(name="Calibri", bold=True, size=12, color="4F46E5")
+    font_h3    = Font(name="Calibri", bold=True, size=11, color="374151")
+    font_bold  = Font(name="Calibri", bold=True, size=10)
+    font_norm  = Font(name="Calibri", size=10)
+    fill_h1    = PatternFill("solid", fgColor="4F46E5")
+    fill_h2    = PatternFill("solid", fgColor="EEF2FF")
+    thin       = Side(style="thin", color="E5E7EB")
+    border_bot = Border(bottom=thin)
+    wrap_align = Alignment(wrap_text=True, vertical="top")
+
+    row = 1
+    for line in text.splitlines():
+        cell = ws.cell(row=row, column=1)
+        cell.alignment = wrap_align
+
+        if line.startswith("# "):
+            cell.value = line[2:].strip()
+            cell.font = font_h1
+            cell.fill = fill_h1
+            ws.row_dimensions[row].height = 22
+        elif line.startswith("## "):
+            cell.value = line[3:].strip()
+            cell.font = font_h2
+            cell.fill = fill_h2
+            cell.border = border_bot
+            ws.row_dimensions[row].height = 18
+        elif line.startswith("### "):
+            cell.value = line[4:].strip()
+            cell.font = font_h3
+            ws.row_dimensions[row].height = 16
+        elif line.startswith(("- ", "• ", "* ")):
+            cell.value = "• " + line[2:].strip()
+            cell.font = font_norm
+        elif line.startswith("**") and line.endswith("**"):
+            cell.value = line.strip("*").strip()
+            cell.font = font_bold
+        elif line.strip() == "":
+            ws.row_dimensions[row].height = 6
+        else:
+            # Handle inline bold (**text**) by stripping markers
+            clean = line.replace("**", "")
+            cell.value = clean
+            cell.font = font_bold if line.startswith("**") else font_norm
+
+        row += 1
+
+    # Set column width
+    ws.column_dimensions["A"].width = 100
+
+    buf = BytesIO()
+    wb.save(buf)
+    return buf.getvalue()
+
+
 def _to_html_report(md_text: str, title: str = "QBR Report") -> str:
     try:
         import markdown as mdlib
@@ -785,9 +851,7 @@ with tab_ai:
                 st.session_state['ai_history'] = history[:3]
                 st.session_state['ai_just_ran'] = True
 
-                _xlsx_buf = BytesIO()
-                pd.DataFrame([{"Анализ": _full}]).to_excel(_xlsx_buf, index=False)
-                st.download_button("📥 Скачать анализ (.xlsx)", _xlsx_buf.getvalue(),
+                st.download_button("📥 Скачать анализ (.xlsx)", _text_to_xlsx(_full, "Анализ"),
                                    file_name="analysis.xlsx",
                                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
             except Exception as e:
@@ -799,9 +863,7 @@ with tab_ai:
             st.markdown("---")
             if len(history) == 1:
                 st.markdown(history[0]['result'])
-                _xlsx_buf = BytesIO()
-                pd.DataFrame([{"Анализ": history[0]['result']}]).to_excel(_xlsx_buf, index=False)
-                st.download_button("📥 Скачать (.xlsx)", _xlsx_buf.getvalue(),
+                st.download_button("📥 Скачать (.xlsx)", _text_to_xlsx(history[0]['result'], "Анализ"),
                                    file_name="analysis.xlsx",
                                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                                    key="dl_ai_0")
@@ -810,9 +872,7 @@ with tab_ai:
                 for _ht, _h in zip(_htabs, history):
                     with _ht:
                         st.markdown(_h['result'])
-                        _xlsx_buf = BytesIO()
-                        pd.DataFrame([{"Анализ": _h['result']}]).to_excel(_xlsx_buf, index=False)
-                        st.download_button("📥 Скачать (.xlsx)", _xlsx_buf.getvalue(),
+                        st.download_button("📥 Скачать (.xlsx)", _text_to_xlsx(_h['result'], "Анализ"),
                                            file_name="analysis.xlsx",
                                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                                            key=f"dl_ai_{id(_h)}")
@@ -882,9 +942,7 @@ with tab_qbr:
                 st.session_state['qbr_result'] = _full
                 st.session_state['qbr_client'] = client_name
 
-                _xlsx_buf = BytesIO()
-                pd.DataFrame([{"QBR": _full}]).to_excel(_xlsx_buf, index=False)
-                st.download_button("📥 Скачать QBR (.xlsx)", _xlsx_buf.getvalue(),
+                st.download_button("📥 Скачать QBR (.xlsx)", _text_to_xlsx(_full, "QBR"),
                                    file_name=f"QBR_{client_name or 'report'}.xlsx",
                                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
             except Exception as e:
@@ -894,9 +952,7 @@ with tab_qbr:
             st.markdown("---")
             st.markdown(st.session_state['qbr_result'])
             _cn = st.session_state.get('qbr_client', 'report')
-            _xlsx_buf = BytesIO()
-            pd.DataFrame([{"QBR": st.session_state['qbr_result']}]).to_excel(_xlsx_buf, index=False)
-            st.download_button("📥 Скачать QBR (.xlsx)", _xlsx_buf.getvalue(),
+            st.download_button("📥 Скачать QBR (.xlsx)", _text_to_xlsx(st.session_state['qbr_result'], "QBR"),
                                file_name=f"QBR_{_cn}.xlsx",
                                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                                key="qbr_dl_xlsx")
