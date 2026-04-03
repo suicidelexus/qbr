@@ -29,13 +29,12 @@ st.markdown("""
 html, body, [class*="css"] { font-family: 'Inter', Arial, sans-serif !important; }
 
 [data-testid="stSidebar"] { min-width: 260px !important; max-width: 260px !important; }
+[data-testid="stExpandSidebarButton"] {
+    position: fixed !important; top: 0.5rem !important; left: 0.5rem !important; z-index: 999 !important;
+}
 [data-testid="stSidebar"] > div {
     background: var(--secondary-background-color) !important;
     border-right: 1px solid rgba(128,128,128,0.15) !important;
-}
-[data-testid="stSidebarCollapseButton"] {
-    position: fixed !important; top: 0.5rem !important;
-    left: 0.5rem !important; z-index: 999 !important;
 }
 [data-testid="stMetricValue"] { font-size: 1.4rem !important; font-weight: 700 !important; white-space: nowrap; }
 [data-testid="stMetricLabel"] { font-size: 0.72rem !important; font-weight: 500 !important; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.6; }
