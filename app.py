@@ -3,6 +3,7 @@ Media Analytics — Streamlit app
 Sources: Excel/CSV files and public Google Sheets
 """
 import os
+import json
 import streamlit as st
 import pandas as pd
 from io import BytesIO
@@ -62,6 +63,36 @@ h3 { font-size: 1.0rem !important; font-weight: 600 !important; }
 hr { border-color: rgba(128,128,128,0.15) !important; margin: 1rem 0 !important; }
 </style>
 """, unsafe_allow_html=True)
+
+# ── synonyms dictionary ───────────────────────────────────
+
+SYNONYMS_PATH = os.path.join(os.path.dirname(__file__), "synonyms.json")
+
+
+def _load_synonyms() -> dict:
+    try:
+        with open(SYNONYMS_PATH, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+
+def _save_synonyms(new_mappings: dict):
+    """Merge new_mappings into synonyms.json and persist."""
+    synonyms = _load_synonyms()
+    synonyms.update(new_mappings)
+    try:
+        with open(SYNONYMS_PATH, "w", encoding="utf-8") as f:
+            json.dump(synonyms, f, ensure_ascii=False, indent=2)
+    except Exception:
+        pass
+
+
+def _apply_synonyms(col_names: list) -> dict:
+    """Return mapping {original_col: standard_field} from synonyms dict."""
+    synonyms = _load_synonyms()
+    return {col: synonyms[col] for col in col_names if col in synonyms}
+
 
 # ── helpers ───────────────────────────────────────────────
 
@@ -273,23 +304,42 @@ if raw_df is None:
 
 file_key = str(sorted(raw_df.columns.tolist()))
 if 'col_map' not in st.session_state or st.session_state.get('col_map_key') != file_key:
-    if llm_available:
-        sample_json = raw_df.head(3).to_json(orient='records', force_ascii=False)
-        llm_map = _detect_cols_llm(tuple(raw_df.columns.tolist()), sample_json,
+    # Priority: synonyms dict → keyword detection → LLM for unknowns
+    syn_map = _apply_synonyms(raw_df.columns.tolist())
+    kw_map  = detect_columns_keyword(raw_df)
+    known_map = {**kw_map, **syn_map}  # synonyms override keywords
+
+    unknown_cols = [c for c in raw_df.columns if c not in known_map]
+    if llm_available and unknown_cols:
+        sample_json = raw_df[unknown_cols].head(3).to_json(orient='records', force_ascii=False)
+        llm_map = _detect_cols_llm(tuple(unknown_cols), sample_json,
                                     api_key, provider, llm_model)
     else:
         llm_map = {}
-    kw_map = detect_columns_keyword(raw_df)
-    st.session_state['col_map'] = {**kw_map, **llm_map}
+
+    st.session_state['col_map'] = {**known_map, **llm_map}
     st.session_state['col_map_key'] = file_key
+    # Track which cols were auto-detected (not from synonyms) — to prompt confirmation
+    st.session_state['col_map_new'] = {c: v for c, v in llm_map.items() if c not in syn_map}
 
 col_map = st.session_state['col_map']
+_new_cols = st.session_state.get('col_map_new', {})
+_has_new  = bool(_new_cols)
 
-with st.expander("⚙️ Маппинг колонок", expanded=(not bool(col_map))):
-    st.caption("Система определила колонки автоматически. Исправьте если нужно.")
+with st.expander("⚙️ Маппинг колонок", expanded=_has_new):
+    if _has_new:
+        st.info(f"🤖 AI определил {len(_new_cols)} новых колонок — проверьте и нажмите **Подтвердить**.")
+    else:
+        st.caption("Колонки определены из словаря. Исправьте если нужно.")
     standard_options = ['— пропустить —'] + list(config.STANDARD_COLS.keys())
     _map_df = pd.DataFrame([
-        {"Исходная колонка": orig, "Стандартное поле": col_map.get(orig, '— пропустить —')}
+        {
+            "Исходная колонка": orig,
+            "Стандартное поле": col_map.get(orig, '— пропустить —'),
+            "Источник": "📖 словарь" if orig in _apply_synonyms(raw_df.columns.tolist())
+                        else ("🤖 AI" if orig in _new_cols else "🔑 ключевые слова")
+                        if col_map.get(orig) else "—",
+        }
         for orig in raw_df.columns
     ])
     _edited = st.data_editor(
@@ -297,14 +347,19 @@ with st.expander("⚙️ Маппинг колонок", expanded=(not bool(col_
         column_config={
             "Исходная колонка": st.column_config.TextColumn(disabled=True, width="medium"),
             "Стандартное поле": st.column_config.SelectboxColumn(options=standard_options, width="medium"),
+            "Источник": st.column_config.TextColumn(disabled=True, width="small"),
         },
         key="col_map_editor",
     )
-    if st.button("Применить маппинг", type="primary"):
+    if st.button("Подтвердить маппинг", type="primary"):
         new_map = {r["Исходная колонка"]: r["Стандартное поле"]
                    for _, r in _edited.iterrows() if r["Стандартное поле"] != '— пропустить —'}
         st.session_state['col_map'] = new_map
+        st.session_state['col_map_new'] = {}
         col_map = new_map
+        # Save confirmed mappings to synonyms dictionary
+        _save_synonyms(new_map)
+        st.toast("✅ Маппинг сохранён в словарь", icon="📖")
 
 # ── data cleaning ─────────────────────────────────────────
 
@@ -537,6 +592,7 @@ with tab_compare:
             compare_metrics = st.multiselect(
                 "Метрики:", metric_cols,
                 default=[m for m in ['ctr', 'cpm', 'TotalSum'] if m in metric_cols][:3],
+                key="compare_metrics_select",
             )
             min_imp = st.number_input("Мин. показов:", value=0, step=1000)
 
@@ -602,6 +658,7 @@ with tab_dynamics:
                 "Метрики:",
                 [m for m in ['ctr', 'cpm', 'TotalSum', 'impressions', 'clicks'] if m in df.columns],
                 default=[m for m in ['ctr', 'TotalSum'] if m in df.columns],
+                key="dyn_metrics_select",
             )
         with c3:
             color_by_opt = ['— без разбивки —'] + [c for c in dim_cols if c != 'date']
